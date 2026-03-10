@@ -1,0 +1,9 @@
+# VS Code
+.vscode/
+
+# Local Stockfish file
+stockfish.js
+
+# OS files
+.DS_Store
+Thumbs.db
