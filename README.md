@@ -8,7 +8,7 @@ Premium chess experience with Stockfish AI.
 🎨 Random player colors
 📱 Fully responsive
 
-Play: [kaerith-chess.netlify.app](https://kaerith-chess.netlify.app)
+Play: [kaerith.fr/chess](https://www.kaerith.fr/chess)
 
 #Chess #Stockfish #WebDev #OpenSource
 
