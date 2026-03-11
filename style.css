@@ -72,6 +72,42 @@ body {
     font-weight: 300;
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.difficulty-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 99px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+.select-premium {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    padding-right: 0.5rem;
+}
+
+.select-premium option {
+    background-color: #1e293b;
+    color: var(--text-main);
+}
+
 .turn-indicator {
     padding: 0.75rem 1.5rem;
     background: var(--card-bg);

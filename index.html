@@ -20,9 +20,20 @@
     <main class="app-container">
         <header class="game-header">
             <h1 class="title">Grandmaster<span>Chess</span></h1>
-            <div id="turn-indicator" class="turn-indicator white-turn">
-                <span class="indicator-dot"></span>
-                <span class="turn-text">White's Turn</span>
+            <div class="header-controls">
+                <div class="difficulty-control">
+                    <label for="difficulty-select">Difficulty</label>
+                    <select id="difficulty-select" class="select-premium">
+                        <option value="0">Easy</option>
+                        <option value="8" selected>Medium</option>
+                        <option value="15">Hard</option>
+                        <option value="20">Grandmaster</option>
+                    </select>
+                </div>
+                <div id="turn-indicator" class="turn-indicator white-turn">
+                    <span class="indicator-dot"></span>
+                    <span class="turn-text">White's Turn</span>
+                </div>
             </div>
         </header>
 

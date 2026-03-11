@@ -3,6 +3,7 @@ const turnIndicator = document.getElementById('turn-indicator');
 const turnText = turnIndicator.querySelector('.turn-text');
 const gameStatus = document.getElementById('game-status');
 const resetBtn = document.getElementById('reset-btn');
+const difficultySelect = document.getElementById('difficulty-select');
 const playerCards = document.querySelectorAll('.player-card');
 
 let game = new Chess();
@@ -33,7 +34,18 @@ function initStockfish() {
     
     stockfish.postMessage('uci');
     stockfish.postMessage('isready');
+    setDifficulty();
 }
+
+function setDifficulty() {
+    if (!stockfish) return;
+    const skill = difficultySelect.value;
+    stockfish.postMessage(`setoption name Skill Level value ${skill}`);
+}
+
+difficultySelect.addEventListener('change', () => {
+    setDifficulty();
+});
 
 function askAiForMove() {
     if (game.game_over() || isAiThinking) return;
@@ -43,8 +55,15 @@ function askAiForMove() {
     
     // Send current position to Stockfish
     stockfish.postMessage('position fen ' + game.fen());
-    // Find best move - search for a short duration for responsiveness
-    stockfish.postMessage('go depth 13');
+    // Find best move - vary depth based on difficulty
+    let depth = 13;
+    const skill = parseInt(difficultySelect.value);
+    if (skill <= 5) depth = 5;
+    else if (skill <= 10) depth = 10;
+    else if (skill <= 18) depth = 14;
+    else depth = 18;
+
+    stockfish.postMessage(`go depth ${depth}`);
 }
 
 function makeAiMove(moveStr) {
