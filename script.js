@@ -4,6 +4,8 @@ const turnText = turnIndicator.querySelector('.turn-text');
 const gameStatus = document.getElementById('game-status');
 const resetBtn = document.getElementById('reset-btn');
 const difficultySelect = document.getElementById('difficulty-select');
+const capturedHuman = document.getElementById('captured-human');
+const capturedAi = document.getElementById('captured-ai');
 const playerCards = document.querySelectorAll('.player-card');
 
 let game = new Chess();
@@ -83,7 +85,52 @@ function makeAiMove(moveStr) {
         renderBoard();
         updateUI();
         checkGameEnd();
+        updateCapturedPieces();
     }
+}
+
+function updateCapturedPieces() {
+    capturedHuman.innerHTML = '';
+    capturedAi.innerHTML = '';
+
+    const history = game.history({ verbose: true });
+    const pieceOrder = { 'p': 0, 'n': 1, 'b': 2, 'r': 3, 'q': 4 };
+
+    const humanCaptures = [];
+    const aiCaptures = [];
+
+    history.forEach(move => {
+        if (move.captured) {
+            const capturedPieceColor = move.color === 'w' ? 'b' : 'w';
+            const pieceKey = capturedPieceColor + move.captured.toUpperCase();
+            
+            const isHumanMove = (move.color === 'w' && playerOneIsWhite) || (move.color === 'b' && !playerOneIsWhite);
+            if (isHumanMove) {
+                humanCaptures.push({ key: pieceKey, type: move.captured });
+            } else {
+                aiCaptures.push({ key: pieceKey, type: move.captured });
+            }
+        }
+    });
+
+    // Sort pieces by value
+    [humanCaptures, aiCaptures].forEach(list => {
+        list.sort((a, b) => pieceOrder[a.type] - pieceOrder[b.type]);
+    });
+
+    humanCaptures.forEach(piece => {
+        const div = document.createElement('div');
+        div.classList.add('captured-piece');
+        div.innerHTML = PIECES_SVG[piece.key];
+        capturedHuman.appendChild(div);
+    });
+
+    aiCaptures.forEach(piece => {
+        const div = document.createElement('div');
+        div.classList.add('captured-piece');
+        div.innerHTML = PIECES_SVG[piece.key];
+        capturedAi.appendChild(div);
+    });
 }
 
 function updateStatusWithThinking() {
@@ -104,6 +151,7 @@ function initGame() {
     renderBoard();
     updateUI();
     updatePlayerInfo();
+    updateCapturedPieces();
     
     const whitePlayerName = playerOneIsWhite ? 'You' : 'AI';
     gameStatus.innerText = `Game Started! ${whitePlayerName} is White.`;
@@ -254,6 +302,7 @@ function handleSquareClick(squareName) {
             
             if (!checkGameEnd()) {
                 // If game didn't end, it's AI's turn
+                updateCapturedPieces();
                 setTimeout(askAiForMove, 500);
             }
             return;
