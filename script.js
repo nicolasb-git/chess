@@ -121,14 +121,18 @@ function updateCapturedPieces() {
     humanCaptures.forEach(piece => {
         const div = document.createElement('div');
         div.classList.add('captured-piece');
-        div.innerHTML = PIECES_SVG[piece.key];
+        const img = document.createElement('img');
+        img.src = PIECES_SVG[piece.key];
+        div.appendChild(img);
         capturedHuman.appendChild(div);
     });
 
     aiCaptures.forEach(piece => {
         const div = document.createElement('div');
         div.classList.add('captured-piece');
-        div.innerHTML = PIECES_SVG[piece.key];
+        const img = document.createElement('img');
+        img.src = PIECES_SVG[piece.key];
+        div.appendChild(img);
         capturedAi.appendChild(div);
     });
 }
@@ -244,7 +248,9 @@ function renderBoard() {
                 const pieceType = pieceData.color + pieceData.type.toUpperCase();
                 const pieceDiv = document.createElement('div');
                 pieceDiv.classList.add('piece');
-                pieceDiv.innerHTML = PIECES_SVG[pieceType];
+                const img = document.createElement('img');
+                img.src = PIECES_SVG[pieceType];
+                pieceDiv.appendChild(img);
                 square.appendChild(pieceDiv);
             }
 
