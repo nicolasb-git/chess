@@ -329,15 +329,20 @@ body {
 }
 
 .legal-dot {
+    position: absolute;
     width: 20px;
     height: 20px;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.15);
     border-radius: 50%;
     pointer-events: none;
+    z-index: 15; /* Above the piece which is z-index 10 */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .square:hover .legal-dot {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .piece {
