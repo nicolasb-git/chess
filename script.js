@@ -7,6 +7,7 @@ const difficultySelect = document.getElementById('difficulty-select');
 const capturedHuman = document.getElementById('captured-human');
 const capturedAi = document.getElementById('captured-ai');
 const playerCards = document.querySelectorAll('.player-card');
+const analysisToggle = document.getElementById('analysis-toggle');
 
 let game = new Chess();
 let selectedSquare = null;
@@ -14,6 +15,10 @@ let lastMove = null;
 let playerOneIsWhite = true;
 let stockfish = null;
 let isAiThinking = false;
+let lastEvalWcp = null; // Centipawns from White's perspective
+let lastEvaluatedMoveCount = -1;
+let lastMoveQuality = null; 
+let showAnalysis = true;
 
 // Initialize Stockfish
 function initStockfish() {
@@ -26,10 +31,18 @@ function initStockfish() {
     
     stockfish.onmessage = function(event) {
         const line = event.data;
+        
+        // Handle move quality evaluation
+        if (line.includes('score cp') || line.includes('score mate')) {
+            parseEvaluation(line);
+        }
+
         if (line.startsWith('bestmove')) {
             const moveStr = line.split(' ')[1];
             if (moveStr && moveStr !== '(none)') {
-                makeAiMove(moveStr);
+                if (isAiThinking) {
+                    makeAiMove(moveStr);
+                }
             }
         }
     };
@@ -37,6 +50,73 @@ function initStockfish() {
     stockfish.postMessage('uci');
     stockfish.postMessage('isready');
     setDifficulty();
+}
+
+function parseEvaluation(line) {
+    const scoreMatch = line.match(/score cp (-?\d+)/);
+    const mateMatch = line.match(/score mate (-?\d+)/);
+    let score = 0;
+
+    if (scoreMatch) {
+        score = parseInt(scoreMatch[1]);
+    } else if (mateMatch) {
+        const mateIn = parseInt(mateMatch[1]);
+        score = mateIn > 0 ? 10000 - mateIn : -10000 - mateIn;
+    } else {
+        return;
+    }
+
+    // Scores from white perspective: positive is white advantage
+    const currentWcp = game.turn() === 'w' ? score : -score;
+    const currentMoveCount = game.history().length;
+    
+    // If we have a previous evaluation, we can judge the move just made
+    if (lastEvalWcp !== null && currentMoveCount > lastEvaluatedMoveCount && currentMoveCount > 0) {
+        const history = game.history({ verbose: true });
+        const lastMove = history[history.length - 1];
+        const playerWhoJustMoved = lastMove.color; // 'w' or 'b'
+        
+        // Loss is (advantage for that player before move) - (advantage for that player after move)
+        const evalBefore = lastEvalWcp;
+        const evalAfter = currentWcp;
+        let loss = 0;
+
+        if (playerWhoJustMoved === 'w') {
+            loss = evalBefore - evalAfter;
+        } else {
+            loss = evalAfter - evalBefore;
+        }
+        console.log(`Move by ${playerWhoJustMoved}, Loss: ${loss}`);
+        if (showAnalysis && loss > 50) {
+            displayMoveQuality(loss);
+        } else {
+            lastMoveQuality = null;
+            renderBoard();
+        }
+        lastEvaluatedMoveCount = currentMoveCount;
+    }
+
+    lastEvalWcp = currentWcp;
+}
+
+function displayMoveQuality(loss) {
+    if (loss > 300) {
+        lastMoveQuality = 'blunder';
+    } else if (loss > 100) {
+        lastMoveQuality = 'mistake';
+    } else if (loss > 50) {
+        lastMoveQuality = 'inaccuracy';
+    } else {
+        lastMoveQuality = null;
+    }
+    
+    renderBoard();
+}
+
+function evaluatePosition() {
+    if (!stockfish || game.game_over()) return;
+    stockfish.postMessage('position fen ' + game.fen());
+    stockfish.postMessage('go depth 13');
 }
 
 function setDifficulty() {
@@ -81,11 +161,13 @@ function makeAiMove(moveStr) {
 
     if (move) {
         lastMove = { from: move.from, to: move.to };
+        lastMoveQuality = null; // Reset quality for new move
         isAiThinking = false;
         renderBoard();
         updateUI();
         checkGameEnd();
         updateCapturedPieces();
+        evaluatePosition();
     }
 }
 
@@ -156,6 +238,12 @@ function initGame() {
     updateUI();
     updatePlayerInfo();
     updateCapturedPieces();
+    lastEvalWcp = null;
+    lastEvaluatedMoveCount = -1;
+    lastMoveQuality = null;
+
+    // Get initial evaluation
+    setTimeout(evaluatePosition, 100);
     
     const whitePlayerName = playerOneIsWhite ? 'You' : 'AI';
     gameStatus.innerText = `Game Started! ${whitePlayerName} is White.`;
@@ -261,6 +349,11 @@ function renderBoard() {
 
             if (lastMove && (lastMove.from === squareName || lastMove.to === squareName)) {
                 square.classList.add('last-move');
+                
+                // Add quality coloring if this is the destination square
+                if (lastMove.to === squareName && lastMoveQuality) {
+                    square.classList.add(lastMoveQuality);
+                }
             }
 
             if (inCheck && squareName === kingSquare) {
@@ -302,6 +395,7 @@ function handleSquareClick(squareName) {
 
         if (move) {
             lastMove = { from: move.from, to: move.to };
+            lastMoveQuality = null; // Reset quality for new move
             selectedSquare = null;
             renderBoard();
             updateUI();
@@ -309,6 +403,7 @@ function handleSquareClick(squareName) {
             if (!checkGameEnd()) {
                 // If game didn't end, it's AI's turn
                 updateCapturedPieces();
+                evaluatePosition();
                 setTimeout(askAiForMove, 500);
             }
             return;
@@ -373,6 +468,16 @@ function updateUI() {
 
 resetBtn.addEventListener('click', () => {
     initGame();
+});
+
+analysisToggle.addEventListener('change', () => {
+    showAnalysis = analysisToggle.checked;
+    if (!showAnalysis) {
+        lastMoveQuality = null;
+        renderBoard();
+    } else {
+        evaluatePosition();
+    }
 });
 
 // Initialize on load
