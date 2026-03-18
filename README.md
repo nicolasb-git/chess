@@ -6,6 +6,7 @@ Premium chess experience with Stockfish AI.
 🤖 Stockfish 10 (Easy to GM)
 📊 Live capture tracking
 🎨 Random player colors
+🔍 Analysis & Blunder Detection (Optional)
 📱 Fully responsive
 
 Play: [kaerith.fr/chess](https://www.kaerith.fr/chess)

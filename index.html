@@ -41,8 +41,18 @@
                     <span class="indicator-dot"></span>
                     <span class="turn-text">White's Turn</span>
                 </div>
+                <button id="reset-btn" class="btn secondary header-btn">Reset Game</button>
             </div>
         </header>
+        
+        <!-- Game Over Overlay -->
+        <div id="game-over-overlay" class="overlay hidden">
+            <div class="overlay-content">
+                <h2 id="overlay-title">Checkmate!</h2>
+                <p id="overlay-status">White wins</p>
+                <button id="play-again-btn" class="btn primary">Play Again</button>
+            </div>
+        </div>
 
         <div class="game-layout">
             <aside class="sidebar left">
@@ -74,14 +84,6 @@
             </aside>
         </div>
 
-        <footer class="game-footer">
-            <div class="status-bar">
-                <p id="game-status">Game Started. Good luck!</p>
-            </div>
-            <div class="controls">
-                <button id="reset-btn" class="btn secondary">Reset Game</button>
-            </div>
-        </footer>
     </main>
     <script data-goatcounter="https://kaerith.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>

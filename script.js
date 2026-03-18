@@ -1,13 +1,16 @@
 const boardElement = document.getElementById('chess-board');
 const turnIndicator = document.getElementById('turn-indicator');
 const turnText = turnIndicator.querySelector('.turn-text');
-const gameStatus = document.getElementById('game-status');
 const resetBtn = document.getElementById('reset-btn');
 const difficultySelect = document.getElementById('difficulty-select');
 const capturedHuman = document.getElementById('captured-human');
 const capturedAi = document.getElementById('captured-ai');
 const playerCards = document.querySelectorAll('.player-card');
 const analysisToggle = document.getElementById('analysis-toggle');
+const gameOverOverlay = document.getElementById('game-over-overlay');
+const overlayTitle = document.getElementById('overlay-title');
+const overlayStatus = document.getElementById('overlay-status');
+const playAgainBtn = document.getElementById('play-again-btn');
 
 let game = new Chess();
 let selectedSquare = null;
@@ -133,7 +136,7 @@ function askAiForMove() {
     if (game.game_over() || isAiThinking) return;
     
     isAiThinking = true;
-    updateStatusWithThinking();
+    // Removed status bar thinking update
     
     // Send current position to Stockfish
     stockfish.postMessage('position fen ' + game.fen());
@@ -245,8 +248,8 @@ function initGame() {
     // Get initial evaluation
     setTimeout(evaluatePosition, 100);
     
-    const whitePlayerName = playerOneIsWhite ? 'You' : 'AI';
-    gameStatus.innerText = `Game Started! ${whitePlayerName} is White.`;
+    // Hide overlay
+    gameOverOverlay.classList.add('hidden');
 
     // If AI is white, trigger its first move
     if (!playerOneIsWhite) {
@@ -430,15 +433,16 @@ function checkGameEnd() {
     if (game.in_checkmate()) {
         const winner = game.turn() === 'b' ? "White" : "Black";
         const winnerName = (game.turn() === 'b' && playerOneIsWhite) || (game.turn() === 'w' && !playerOneIsWhite) ? "You win!" : "AI wins!";
-        gameStatus.innerText = `Checkmate! ${winner} wins. ${winnerName}`;
+        
+        overlayTitle.innerText = "Checkmate!";
+        overlayStatus.innerText = `${winner} wins. ${winnerName}`;
+        gameOverOverlay.classList.remove('hidden');
         return true;
     } else if (game.in_draw()) {
-        gameStatus.innerText = "Draw!";
+        overlayTitle.innerText = "Draw!";
+        overlayStatus.innerText = "The game ended in a draw.";
+        gameOverOverlay.classList.remove('hidden');
         return true;
-    } else if (game.in_check()) {
-        gameStatus.innerText = "Check!";
-    } else if (!isAiThinking) {
-        gameStatus.innerText = "Your move.";
     }
     return false;
 }
@@ -450,11 +454,11 @@ function updateUI() {
     if (turn === 'w') {
         turnIndicator.classList.remove('black-turn');
         turnIndicator.classList.add('white-turn');
-        turnText.innerText = "White's Turn";
+        turnText.innerText = game.in_check() ? "WHITE IN CHECK!" : "White's Turn";
     } else {
         turnIndicator.classList.remove('white-turn');
         turnIndicator.classList.add('black-turn');
-        turnText.innerText = "Black's Turn";
+        turnText.innerText = game.in_check() ? "BLACK IN CHECK!" : "Black's Turn";
     }
 
     if (isPlayerOneTurn) {
@@ -478,6 +482,10 @@ analysisToggle.addEventListener('change', () => {
     } else {
         evaluatePosition();
     }
+});
+
+playAgainBtn.addEventListener('click', () => {
+    initGame();
 });
 
 // Initialize on load
