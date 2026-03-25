@@ -372,6 +372,20 @@ function renderBoard() {
                 square.appendChild(dot);
             }
 
+            // Show coordinate labels
+            if (c === 0) {
+                const label = document.createElement('span');
+                label.classList.add('coordinate-label', 'rank');
+                label.innerText = squareName[1];
+                square.appendChild(label);
+            }
+            if (r === 7) {
+                const label = document.createElement('span');
+                label.classList.add('coordinate-label', 'file');
+                label.innerText = squareName[0];
+                square.appendChild(label);
+            }
+
             square.addEventListener('click', () => handleSquareClick(squareName));
             boardElement.appendChild(square);
         }
